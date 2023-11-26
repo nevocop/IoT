@@ -1,8 +1,14 @@
 /***********************************************************************************************************
 *                                                                                                          *
 *  Firmware base para el Laboratorio #1 del curso Diseño de Dispositivos IoT de la Maestría en Ingeniería  *
-*                                                                                                          *
 *                             Monitoreo de ambiente y control de dispositivos                              *
+*                                                                                                          *
+*                                        Nelson Barrera Tovar                                              *
+*                                         Valentina Castaño                                                *
+*                                          Federico Pareja                                                 *
+*                                                                                                          *
+*                                 Universidad Autónoma de Manizales                                        *
+*                                       Maestria en Ingeniería                                             *
 *                                                                                                          *
 ***********************************************************************************************************/
 #include "RMaker.h"

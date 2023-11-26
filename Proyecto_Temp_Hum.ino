@@ -9,13 +9,12 @@
 *                                                                                                          *
 *                                 Universidad Autónoma de Manizales                                        *
 *                                       Maestria en Ingeniería                                             *
-*                                                                                                          *
+*                                                                                                          * 
 ***********************************************************************************************************/
 #include "RMaker.h"
 #include "WiFi.h"
 #include "WiFiProv.h"
 #include "DHT.h"
-#include <SimpleTimer.h>
 
 #define pinDHT 19  // Asignación del pin para el sensor
 #define DHTTYPE DHT22 // Identificación del tipo de sensor a utilizar
@@ -24,11 +23,6 @@ const char *SSID = "FABABE";
 const char *SSIDPass = "T9xz362021";
 const int fan = 25;
 
-//*******************
-//SimpleTimer Timer;
-//*******************
-
-//---------------------------------------------------
 /*****************************************************************************************************
  *                                Función control_LED y BUZZER                                              *
 *****************************************************************************************************/
@@ -46,7 +40,6 @@ void control_Buzzer(int Buzzer_no, int Buzzer_pin, boolean &estado){
   Serial.println("Buzzer"+String(Buzzer_no)+" es "+text);
 }
 //-------------------------------------------------------
-
 // Definición de nombres de los dispositivos
 char dispositivo1[] = "Led Blanco";
 char dispositivo2[] = "Led Verde";
@@ -71,14 +64,8 @@ bool ESTADO_BZ1 = LOW; //Defiene el estado del Buzzer 1
 static Switch my_switch1(dispositivo1, &LED1);
 static Switch my_switch2(dispositivo2, &LED2);
 static Switch my_switch3(dispositivo3, &BZ1);
-
-//************************************
 static TemperatureSensor temperature("Visor Temperatura");
 static TemperatureSensor humidity("Visor Humedad");
-//***************************************
-
-//---------------------------------------------------
-
 /****************************************************************************************************
 *                                    Función sysProvEvent                                           *
 *****************************************************************************************************/
@@ -100,7 +87,6 @@ void sysProvEvent(arduino_event_t *sys_event)
         break;
     }
 }
-
 /****************************************************************************************************
 *                                     Función write_callback                                        *
 *****************************************************************************************************/
@@ -119,7 +105,6 @@ void write_callback(Device *device, Param *param, const param_val_t val, void *p
         control_LED(1, LED1, ESTADO_LED1);
       }
     }
-   
     //----------------------------------------------------------------------------------
     else if(strcmp(nombre_dispositivo, dispositivo2) == 0) {
       
@@ -131,7 +116,6 @@ void write_callback(Device *device, Param *param, const param_val_t val, void *p
         control_LED(2, LED2, ESTADO_LED2);
       }
     }
-
     else if(strcmp(nombre_dispositivo, dispositivo3) == 0) {
       
       Serial.printf("Valor del pulsador = %s\n", val.val.b? "true" : "false");
@@ -141,8 +125,7 @@ void write_callback(Device *device, Param *param, const param_val_t val, void *p
         ESTADO_BZ1 = !ESTADO_BZ1;
         control_Buzzer(1, BZ1, ESTADO_BZ1);
       }
-    }
-   
+    }   
     //----------------------------------------------------------------------------------      
 }
 /****************************************************************************************************
@@ -152,6 +135,8 @@ void setup(){
   //------------------------------------------------------------------------------
   uint32_t chipId = 0;
   Serial.begin(115200);
+  //Timer for Sending Sensor's Data
+  //secondTimer.setInterval(3000);
   // Configuración de GPIO
   pinMode(LED1, OUTPUT);
   pinMode(LED2, OUTPUT);
@@ -198,11 +183,6 @@ void setup(){
   Serial.printf("\nIniciando ESP-RainMaker\n");
   RMaker.start();
   //------------------------------------------------------------------------------
-  //****************
-  //Timer for Sending Sensor's Data
-  //Timer.setInterval(5000);
-  //*****************
-  
   WiFi.onEvent(sysProvEvent);
   #if CONFIG_IDF_TARGET_ESP32
     WiFiProv.beginProvision(WIFI_PROV_SCHEME_BLE, WIFI_PROV_SCHEME_HANDLER_FREE_BTDM, WIFI_PROV_SECURITY_1, SSIDPass, SSID);
@@ -220,22 +200,16 @@ void setup(){
 
   Serial.printf("El estado del LED 1 es %s \n", ESTADO_LED1? "ON" : "OFF");
   Serial.printf("El estado del LED 2 es %s \n", ESTADO_LED2? "ON" : "OFF");
-  Serial.printf("El estado del Buzzer 1 es %s \n", ESTADO_BZ1? "ON" : "OFF");
-  //------------------------------------------------------------------------------
+  Serial.printf("El estado del Buzzer 1 es %s \n", ESTADO_BZ1? "ON" : "OFF");  
 }
-
 /****************************************************************************************************
 *                                        Función cíclica                                            *
 *****************************************************************************************************/
 void loop()
 {
-  //********************************
-  //if (Timer.isReady() && WL_CONNECTED) {                    // Check is ready a second timer
-    //Serial.println("Sending Sensor's Data");
-    delay(3000);
+  
+    delay(10000);
     sensor();
-   // Timer.reset();
- // }     
   //------------------------------------------------------------------------------
   // Leer GPIO0, pulsador externo para reiniciar
   if(digitalRead(gpio_reset) == LOW) { //Pulsador RESET presionado
@@ -256,9 +230,7 @@ void loop()
       Serial.printf("Reset Wi-Fi.\n");
       // Si está presionado RESET por más de 3 segundos pero menos de 10 segundos, reinicia Wi-Fi
       RMakerWiFiReset(2);
-    }
-    //_______________________________________________________________________
-  
+    }    
   //------------------------------------------------------------------------------
   delay(100);
   
@@ -286,12 +258,13 @@ void sensor()
 
    //Actualización y reporte de temperatura y húmedad
    temperature.updateAndReportParam("Temperature", temperatura);
-   humidity.updateAndReportParam("Temperature", humedad);
-   delay(2000);
+   humidity.updateAndReportParam("Temperature", humedad);   
    //Condición para encendido de ventilador
-   if (temperatura < 28){  
+   if (temperatura < 27){  
     digitalWrite(fan, LOW);
-   }else if (temperatura >= 28){
+   }else if (temperatura >= 27){
     digitalWrite(fan, HIGH);
+    Serial.println("La temperatura supera los 27°C");
+    esp_rmaker_raise_alert("Alerta!\nLa temperatura supera los 27°C");
     }
 }

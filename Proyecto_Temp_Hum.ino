@@ -260,11 +260,11 @@ void sensor()
    temperature.updateAndReportParam("Temperature", temperatura);
    humidity.updateAndReportParam("Temperature", humedad);   
    //Condición para encendido de ventilador
-   if (temperatura < 27){  
+   if (temperatura < 28){  
     digitalWrite(fan, LOW);
-   }else if (temperatura >= 27){
+   }else if (temperatura >= 28){
     digitalWrite(fan, HIGH);
-    Serial.println("La temperatura supera los 27°C");
-    esp_rmaker_raise_alert("Alerta!\nLa temperatura supera los 27°C");
+    Serial.println("La temperatura supera los 28°C");
+    esp_rmaker_raise_alert("Alerta!\nLa temperatura supera los 28°C");
     }
 }
